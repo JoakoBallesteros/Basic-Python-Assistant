@@ -7,6 +7,8 @@ import datetime
 import wikipedia
 import os
 import requests
+import pyjokes
+import difflib
 
 
 
@@ -51,6 +53,18 @@ def hablar(mensaje):
 
     engine.say(mensaje)
     engine.runAndWait()
+
+
+def entender(pedido, expresiones, threshold=0.6):
+    pedido = pedido.lower()
+    for expresion in expresiones:
+        expresion = expresion.lower()
+        if expresion in pedido:
+            return True
+        ratio = difflib.SequenceMatcher(None, pedido, expresion).ratio()
+        if ratio >= threshold:
+            return True
+    return False
 
 
 
@@ -159,24 +173,24 @@ def hacer_pedidos():
     while comenzar:
             pedido = audio_texto().lower()
 
-            if "gracias" in pedido:
+            if entender(pedido, ["gracias", "muchas gracias", "te lo agradezco"]):
                   hablar("no hay de que")
 
-            if "abre youtube"  in pedido:
+            if entender(pedido, ["abre youtube", "quiero ver youtube", "pon youtube", "abre yt"]):
                   hablar("abriendo youtube")
                   webbrowser.open("https://www.youtube.com")
                   continue
-            elif "abre el navegador" in pedido:
+            elif entender(pedido, ["abre el navegador", "abre google", "abre chrome", "quiero navegar"]):
                   hablar("abriendo el navegador")
                   webbrowser.open("https://www.google.com/?hl=es")
                   continue
-            elif "qué día es hoy" in pedido:
+            elif entender(pedido, ["qué día es hoy", "qué fecha es", "cuál es el día", "dime la fecha"]):
                   dia()
                   continue
-            elif "qué hora es" in pedido:
+            elif entender(pedido, ["qué hora es", "dime la hora", "qué hora tienes"]):
                   hora()
                   continue
-            elif "busca en wikipedia" in pedido:
+            elif entender(pedido, ["busca en wikipedia", "investiga en wikipedia", "wikipedia"]):
                   hablar("iendo hermano")
                   pedido = pedido.replace("wikipedia", "")
                   wikipedia.set_lang("es")
@@ -184,24 +198,31 @@ def hacer_pedidos():
                   hablar("wikipedia dice lo siguiente")
                   hablar(resultado)
                   continue
-            elif "busca" in pedido:
+            elif entender(pedido, ["busca", "búscame", "quiero buscar"]):
                   hablar("iendo hermano")
                   pedido = pedido.replace("busca", "")
                   pywhatkit.search(pedido)
                   hablar("esto es lo que he encontrado")
                   continue
-            elif "abre whatsapp" in pedido:
+            elif entender(pedido, ["abre whatsapp", "abrir whatsapp", "whatsapp"]):
                   webbrowser.open("https://web.whatsapp.com/")
                   continue
-            elif "abre spotify" in pedido:
+            elif entender(pedido, ["abre spotify", "abrir spotify", "pon música", "quiero escuchar música"]):
                   hablar("iendo hermano")
                   spotify()
                   continue
-            elif "dame el clima de" in pedido:
-                  ciudad = pedido.replace("dame el clima de", "").strip()
+            elif entender(pedido, ["cuenta un chiste", "dime un chiste", "hazme reír"]):
+                  chiste = pyjokes.get_joke(language="es", category="neutral")
+                  hablar(chiste)
+                  continue
+            elif entender(pedido, ["dame el clima de", "qué clima hace en", "cuál es el clima en", "dime el clima de"]):
+                  ciudad = pedido.replace("dame el clima de", "")
+                  ciudad = ciudad.replace("qué clima hace en", "")
+                  ciudad = ciudad.replace("cuál es el clima en", "")
+                  ciudad = ciudad.replace("dime el clima de", "").strip()
                   clima = obtener_clima(ciudad)
                   hablar(clima)
-            elif "nos vemos" in pedido:
+            elif entender(pedido, ["nos vemos", "adiós", "hasta luego", "chau"]):
                   hablar("nos vemos hermano, cuidate")
                   break
 
